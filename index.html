@@ -10,6 +10,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Canvas Confetti Library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- PubNub SDK for Realtime Multi-Device Sync -->
+    <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.2.min.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
@@ -57,11 +59,6 @@
                     <span class="text-2xl">📱</span>
                     <span class="text-lg">Student View (Smartphone)</span>
                 </button>
-            </div>
-
-            <div class="p-3 bg-slate-900/50 rounded-lg text-xs text-slate-400 border border-slate-700 text-center">
-                <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-1 animate-pulse"></span>
-                Instant High-Speed Realtime Server Connected
             </div>
         </div>
 
@@ -287,8 +284,12 @@
             }
         ];
 
-        // --- ULTRA-FAST WEBSOCKET REALTIME ENGINE ---
-        const socket = new WebSocket('wss://www.piesocket.com/v3/korean_classroom_channel?api_key=VCXDeployFreeChannelKey&notify_self=1');
+        // --- GLOBAL PUBNUB MULTI-DEVICE REALTIME ENGINE ---
+        const pubnub = new PubNub({
+            subscribeKey: "sub-c-4377ab04-f586-11ec-b8c1-da4b6938d82d",
+            publishKey: "pub-c-850fbf8d-d522-4a0b-99f5-bf158b4b20ef",
+            uuid: "user_" + Math.random().toString(36).substring(7)
+        });
 
         let gameState = {
             status: 'lobby',
@@ -301,26 +302,25 @@
         let myRole = null;
         let selectedStudentName = null;
 
-        socket.onopen = () => {
-            console.log('Realtime Connected!');
-        };
+        pubnub.subscribe({ channels: ['korean_classroom_channel'] });
 
-        socket.onmessage = (event) => {
-            try {
-                const msg = JSON.parse(event.data);
+        pubnub.addListener({
+            message: function(event) {
+                const msg = event.message;
                 if (msg.type === 'STATE_UPDATE') {
                     gameState = msg.data;
                     renderUI();
                 } else if (msg.type === 'GET_STATE' && myRole === 'teacher') {
                     broadcastState();
                 }
-            } catch(e) {}
-        };
+            }
+        });
 
         function broadcastState() {
-            if (socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({ type: 'STATE_UPDATE', data: gameState }));
-            }
+            pubnub.publish({
+                channel: 'korean_classroom_channel',
+                message: { type: 'STATE_UPDATE', data: gameState }
+            });
         }
 
         function initTeacher() {
@@ -346,11 +346,11 @@
             document.getElementById('view-setup').classList.add('hidden');
             document.getElementById('student-join').classList.remove('hidden');
 
-            // Request state from teacher
             setTimeout(() => {
-                if (socket.readyState === WebSocket.OPEN) {
-                    socket.send(JSON.stringify({ type: 'GET_STATE' }));
-                }
+                pubnub.publish({
+                    channel: 'korean_classroom_channel',
+                    message: { type: 'GET_STATE' }
+                });
             }, 500);
         }
 
@@ -432,6 +432,7 @@
 
         function joinGame() {
             if (!selectedStudentName) return;
+            if (!gameState.players) gameState.players = {};
             gameState.players[selectedStudentName] = true;
             broadcastState();
 
@@ -442,11 +443,12 @@
 
         function submitVote(choice) {
             if (!selectedStudentName) return;
+            if (!gameState.votes) gameState.votes = {};
             gameState.votes[selectedStudentName] = choice;
             broadcastState();
         }
 
-        // UI RENDER LOGIC
+        // RENDER LOGIC
         function renderUI() {
             if (myRole === 'teacher') {
                 updateTeacherUI();
