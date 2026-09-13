@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🇰🇷 WOULD YOU RATHER? - Korean Reading Challenge</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- QR Code Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Firebase App & Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .bg-pattern { background-color: #0f172a; background-image: radial-gradient(#1e293b 1px, transparent 1px); background-size: 24px 24px; }
+        
+        /* 한국어 단어 단위 줄바꿈 설정 (가독성 유지) */
+        .korean-text {
+            word-break: keep-all;
+            overflow-wrap: break-word;
+        }
+    </style>
+</head>
+<body class="bg-pattern text-slate-100 min-h-screen flex flex-col justify-between">
+
+    <!-- TOP HEADER BAR -->
+    <header class="p-4 bg-slate-900/80 border-b border-slate-800 backdrop-blur flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <span class="text-2xl">🇰🇷</span>
+            <div>
+                <h1 class="font-black text-lg tracking-tight text-indigo-400">WOULD YOU RATHER?</h1>
+                <p class="text-xs text-slate-400">Korean Reading Challenge</p>
+            </div>
+        </div>
+        <div id="role-badge" class="px-3 py-1 bg-indigo-500/20 text-indigo-300 text-xs rounded-full font-semibold border border-indigo-500/30">
+            Initial Setup
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-grow flex items-center justify-center p-4">
+
+        <!-- INITIAL ROLE SELECTION / CONFIG -->
+        <div id="view-setup" class="max-w-md w-full bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-2xl space-y-6">
+            <div class="text-center space-y-2">
+                <h2 class="text-2xl font-bold">Select View Mode</h2>
+                <p class="text-sm text-slate-400">Choose how this device will be used in the classroom.</p>
+            </div>
+            
+            <div class="space-y-4">
+                <button onclick="initTeacher()" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl shadow-lg transition flex items-center justify-center space-x-3">
+                    <span class="text-2xl">🖥️</span>
+                    <span class="text-lg">Teacher View (Projector)</span>
+                </button>
+                <button onclick="initStudent()" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 font-bold rounded-xl shadow-lg transition flex items-center justify-center space-x-3">
+                    <span class="text-2xl">📱</span>
+                    <span class="text-lg">Student View (Smartphone)</span>
+                </button>
+            </div>
+
+            <div class="p-4 bg-slate-900/50 rounded-lg text-xs text-slate-400 border border-slate-700 space-y-1">
+                <p class="font-bold text-slate-300">⚙️ Firebase Status:</p>
+                <p id="firebase-status-msg">Using public demo database for instant testing.</p>
+            </div>
+        </div>
+
+        <!-- ================= TEACHER VIEWS ================= -->
+
+        <!-- TEACHER 1: JOIN LOBBY -->
+        <div id="teacher-lobby" class="hidden max-w-4xl w-full bg-slate-800 p-8 rounded-3xl border border-slate-700 shadow-2xl flex flex-col md:flex-row items-center gap-8">
+            <div class="flex-1 space-y-4 text-center md:text-left">
+                <h2 class="text-4xl font-black text-indigo-400">WOULD YOU RATHER?</h2>
+                <h3 class="text-2xl font-bold">KOREAN READING CHALLENGE</h3>
+                <p class="text-slate-400 text-lg">Read Korean → Guess the Meaning → Reveal → Vote!</p>
+                
+                <div class="pt-4">
+                    <div class="text-xl font-bold mb-2">PLAYERS JOINED (<span id="joined-count">0</span> / 5):</div>
+                    <div id="player-list" class="grid grid-cols-2 gap-2 max-w-xs">
+                        <div id="p-인성" class="p-2 rounded-lg bg-slate-700/50 text-slate-500 font-bold border border-slate-600">⬜ 인성</div>
+                        <div id="p-준성" class="p-2 rounded-lg bg-slate-700/50 text-slate-500 font-bold border border-slate-600">⬜ 준성</div>
+                        <div id="p-시원" class="p-2 rounded-lg bg-slate-700/50 text-slate-500 font-bold border border-slate-600">⬜ 시원</div>
+                        <div id="p-하원" class="p-2 rounded-lg bg-slate-700/50 text-slate-500 font-bold border border-slate-600">⬜ 하원</div>
+                        <div id="p-리나" class="p-2 rounded-lg bg-slate-700/50 text-slate-500 font-bold border border-slate-600">⬜ 리나</div>
+                    </div>
+                </div>
+
+                <button onclick="startSession()" class="mt-6 px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-xl font-bold rounded-2xl shadow-xl transition w-full md:w-auto">
+                    START GAME ▶
+                </button>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl flex flex-col items-center justify-center space-y-3 shadow-inner">
+                <div id="qrcode"></div>
+                <p class="text-slate-900 font-black text-sm">SCAN TO JOIN</p>
+            </div>
+        </div>
+
+        <!-- TEACHER 2: QUESTION DISPLAY -->
+        <div id="teacher-game" class="hidden max-w-5xl w-full bg-slate-800 p-8 rounded-3xl border border-slate-700 shadow-2xl space-y-8">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-4">
+                <span id="question-number" class="text-sm font-bold bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full border border-indigo-500/30">QUESTION 1 / 5</span>
+                <span id="vote-count-status" class="text-sm font-bold text-amber-400">ANSWERS RECEIVED: <span id="votes-submitted-count">0</span> / 5</span>
+            </div>
+
+            <!-- Korean Question Container -->
+            <div class="text-center space-y-6 py-4">
+                <h2 id="teacher-korean-text" class="korean-text text-3xl md:text-5xl font-black text-white leading-relaxed tracking-wide px-4">
+                    <!-- Korean Text Injected Here -->
+                </h2>
+                <p id="prompt-instruction" class="text-xl font-bold text-indigo-300">“What do you think this means?”</p>
+                <div id="teacher-english-text" class="hidden text-xl md:text-2xl font-semibold text-emerald-400 bg-slate-900/60 p-4 rounded-xl border border-emerald-500/30 max-w-3xl mx-auto korean-text">
+                    <!-- English Text Injected Here -->
+                </div>
+            </div>
+
+            <!-- Control Buttons -->
+            <div class="flex justify-center gap-4 pt-4 border-t border-slate-700">
+                <button id="btn-reveal-english" onclick="revealEnglish()" class="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-lg font-bold rounded-xl transition">
+                    REVEAL ENGLISH
+                </button>
+                <button id="btn-open-voting" onclick="openVoting()" class="hidden px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-lg font-bold rounded-xl transition">
+                    OPEN VOTING 🗳️
+                </button>
+                <button id="btn-show-results" onclick="showResults()" class="hidden px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-lg font-bold rounded-xl transition">
+                    SHOW RESULTS 📊
+                </button>
+                <button id="btn-next-question" onclick="nextQuestion()" class="hidden px-6 py-3 bg-purple-600 hover:bg-purple-500 text-lg font-bold rounded-xl transition">
+                    NEXT QUESTION ➔
+                </button>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results-display" class="hidden space-y-6 pt-4">
+                <div class="space-y-4">
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-sm font-bold">
+                            <span id="text-option-a" class="korean-text">A: </span>
+                            <span id="count-a">0 votes</span>
+                        </div>
+                        <div class="w-full bg-slate-700 h-8 rounded-lg overflow-hidden flex">
+                            <div id="bar-a" class="bg-indigo-500 h-full transition-all duration-500 flex items-center justify-end pr-2 font-bold text-xs" style="width: 0%"></div>
+                        </div>
+                        <div id="voters-a" class="text-xs text-indigo-300 font-semibold pt-1"></div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-sm font-bold">
+                            <span id="text-option-b" class="korean-text">B: </span>
+                            <span id="count-b">0 votes</span>
+                        </div>
+                        <div class="w-full bg-slate-700 h-8 rounded-lg overflow-hidden flex">
+                            <div id="bar-b" class="bg-emerald-500 h-full transition-all duration-500 flex items-center justify-end pr-2 font-bold text-xs" style="width: 0%"></div>
+                        </div>
+                        <div id="voters-b" class="text-xs text-emerald-300 font-semibold pt-1"></div>
+                    </div>
+                </div>
+
+                <div class="text-center p-3 bg-slate-900/40 rounded-xl border border-slate-700 text-slate-300 italic">
+                    💬 Discussion Prompt: “Why did you choose that?”
+                </div>
+            </div>
+        </div>
+
+        <!-- TEACHER 3: FINAL SCREEN -->
+        <div id="teacher-final" class="hidden max-w-2xl w-full bg-slate-800 p-8 rounded-3xl border border-slate-700 shadow-2xl text-center space-y-6">
+            <span class="text-6xl">🎉</span>
+            <h2 class="text-4xl font-black text-amber-400">GREAT JOB!</h2>
+            <div class="space-y-1">
+                <p class="text-2xl font-bold">오늘의 한국어 읽기 미션 완료!</p>
+                <p class="text-slate-400">Korean Reading Challenge Complete!</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4 py-4">
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700">
+                    <p class="text-3xl font-black text-indigo-400">5</p>
+                    <p class="text-xs text-slate-400 uppercase font-bold">Questions Completed</p>
+                </div>
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700">
+                    <p class="text-3xl font-black text-emerald-400">5</p>
+                    <p class="text-xs text-slate-400 uppercase font-bold">Students Participated</p>
+                </div>
+            </div>
+            <button onclick="resetGame()" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-sm font-bold rounded-xl transition">
+                🔄 Restart Session
+            </button>
+        </div>
+
+
+        <!-- ================= STUDENT VIEWS ================= -->
+
+        <!-- STUDENT 1: NAME SELECTION -->
+        <div id="student-join" class="hidden max-w-sm w-full bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl space-y-6">
+            <div class="text-center space-y-1">
+                <h2 class="text-xl font-black text-indigo-400">ENTER YOUR NAME</h2>
+                <p class="text-xs text-slate-400">Select your name to join the game</p>
+            </div>
+
+            <div class="space-y-2">
+                <button onclick="selectStudentName('인성')" class="student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition">
+                    <span>인성</span>
+                    <span class="status-icon">⚪</span>
+                </button>
+                <button onclick="selectStudentName('준성')" class="student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition">
+                    <span>준성</span>
+                    <span class="status-icon">⚪</span>
+                </button>
+                <button onclick="selectStudentName('시원')" class="student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition">
+                    <span>시원</span>
+                    <span class="status-icon">⚪</span>
+                </button>
+                <button onclick="selectStudentName('하원')" class="student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition">
+                    <span>하원</span>
+                    <span class="status-icon">⚪</span>
+                </button>
+                <button onclick="selectStudentName('리나')" class="student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition">
+                    <span>리나</span>
+                    <span class="status-icon">⚪</span>
+                </button>
+            </div>
+
+            <button id="btn-join-game" onclick="joinGame()" disabled class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:hover:bg-emerald-600 font-bold rounded-xl shadow-lg transition">
+                JOIN GAME
+            </button>
+        </div>
+
+        <!-- STUDENT 2: WAITING / VOTING INTERFACE -->
+        <div id="student-game" class="hidden max-w-sm w-full bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl space-y-6 text-center">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <span id="student-q-num" class="text-xs font-bold text-indigo-400">QUESTION 1 / 5</span>
+                <span id="student-name-display" class="text-xs font-bold bg-slate-700 px-2 py-1 rounded">Name</span>
+            </div>
+
+            <!-- State: Waiting for Voting to Open -->
+            <div id="student-state-wait" class="py-8 space-y-3">
+                <div class="animate-bounce text-4xl">👀</div>
+                <h3 class="text-lg font-bold text-slate-200">Look at the teacher screen!</h3>
+                <p class="text-xs text-slate-400">Read the Korean question and guess the meaning together.</p>
+            </div>
+
+            <!-- State: Voting Enabled -->
+            <div id="student-state-vote" class="hidden space-y-4">
+                <p class="text-sm font-bold text-amber-400">Choose your answer:</p>
+                <button onclick="submitVote('A')" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 active:scale-95 font-bold rounded-xl text-lg shadow-md transition border border-indigo-400/30">
+                    OPTION A
+                </button>
+                <button onclick="submitVote('B')" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 active:scale-95 font-bold rounded-xl text-lg shadow-md transition border border-emerald-400/30">
+                    OPTION B
+                </button>
+            </div>
+
+            <!-- State: Vote Submitted Confirmation -->
+            <div id="student-state-done" class="hidden py-8 space-y-3">
+                <div class="text-4xl">✅</div>
+                <h3 class="text-xl font-bold text-emerald-400">Answer submitted!</h3>
+                <p class="text-xs text-slate-400">Please wait for everyone else.</p>
+            </div>
+
+            <!-- State: Game Finished -->
+            <div id="student-state-finished" class="hidden py-8 space-y-3">
+                <div class="text-4xl">🎉</div>
+                <h3 class="text-xl font-bold text-amber-400">All Done!</h3>
+                <p class="text-xs text-slate-400">Great job participating today!</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="p-4 text-center text-xs text-slate-500 border-t border-slate-800">
+        Real-Time Korean Reading Challenge • Multi-Device Classroom Web App
+    </footer>
+
+    <!-- SCRIPT APPLICATION LOGIC -->
+    <script>
+        // --- QUESTIONS DATA WITH CLEAN BREAKS & NEW QUESTION 5 ---
+        const QUESTIONS = [
+            {
+                koreanHtml: "지금 100달러 받기<br><span class='text-amber-400 text-3xl font-normal my-2 inline-block'>VS</span><br>1년 뒤에 1,000달러 받기",
+                english: "Get $100 now OR get $1,000 one year from now?",
+                a: "지금 100달러 받기",
+                b: "1년 뒤에 1,000달러 받기"
+            },
+            {
+                koreanHtml: "투명인간 되기<br><span class='text-amber-400 text-3xl font-normal my-2 inline-block'>VS</span><br>하늘을 날 수 있기",
+                english: "Be invisible OR be able to fly?",
+                a: "투명인간 되기",
+                b: "하늘을 날 수 있기"
+            },
+            {
+                koreanHtml: "한 달 동안 휴대폰 없이 살기<br><span class='text-amber-400 text-3xl font-normal my-2 inline-block'>VS</span><br>한 달 동안 디저트 없이 살기",
+                english: "Live without your phone for a month OR live without dessert for a month?",
+                a: "한 달 동안 휴대폰 없이 살기",
+                b: "한 달 동안 디저트 없이 살기"
+            },
+            {
+                koreanHtml: "미래를 볼 수 있기<br><span class='text-amber-400 text-3xl font-normal my-2 inline-block'>VS</span><br>다른 사람의 마음을 읽을 수 있기",
+                english: "See the future OR read other people's minds?",
+                a: "미래를 볼 수 있기",
+                b: "다른 사람의 마음을 읽을 수 있기"
+            },
+            {
+                koreanHtml: "내가 좋아하는 일을 아주 잘하기<br><span class='text-amber-400 text-3xl font-normal my-2 inline-block'>VS</span><br>내가 싫어하는 일을 해도 돈을 아주 많이 벌기",
+                english: "Be really good at something you love OR make a lot of money doing something you don't like?",
+                a: "내가 좋아하는 일을 아주 잘하기",
+                b: "내가 싫어하는 일을 해도 돈을 아주 많이 벌기"
+            }
+        ];
+
+        // --- FIREBASE INITIALIZATION ---
+        const firebaseConfig = {
+            databaseURL: "https://korean-reading-challenge-default-rtdb.firebaseio.com/"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const sessionRef = db.ref('session');
+
+        let myRole = null;
+        let selectedStudentName = null;
+        let localState = {};
+
+        function initTeacher() {
+            myRole = 'teacher';
+            document.getElementById('role-badge').innerText = "Role: Teacher (Host)";
+            document.getElementById('view-setup').classList.add('hidden');
+            document.getElementById('teacher-lobby').classList.remove('hidden');
+
+            const studentUrl = window.location.href.split('?')[0] + '?role=student';
+            document.getElementById('qrcode').innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), {
+                text: studentUrl,
+                width: 160,
+                height: 160
+            });
+
+            resetGame();
+            listenToDatabase();
+        }
+
+        function initStudent() {
+            myRole = 'student';
+            document.getElementById('role-badge').innerText = "Role: Student";
+            document.getElementById('view-setup').classList.add('hidden');
+            document.getElementById('student-join').classList.remove('hidden');
+
+            listenToDatabase();
+        }
+
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('role') === 'student') {
+                initStudent();
+            }
+        };
+
+        function listenToDatabase() {
+            sessionRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
+                localState = data;
+
+                if (myRole === 'teacher') {
+                    updateTeacherUI(data);
+                } else if (myRole === 'student') {
+                    updateStudentUI(data);
+                }
+            });
+        }
+
+        function startSession() {
+            sessionRef.update({
+                status: 'in_game',
+                currentQuestion: 0,
+                step: 1
+            });
+        }
+
+        function revealEnglish() {
+            sessionRef.update({ step: 2 });
+        }
+
+        function openVoting() {
+            sessionRef.update({ step: 3 });
+        }
+
+        function showResults() {
+            sessionRef.update({ step: 4 });
+        }
+
+        function nextQuestion() {
+            const nextQ = (localState.currentQuestion || 0) + 1;
+            if (nextQ >= QUESTIONS.length) {
+                sessionRef.update({ status: 'finished' });
+            } else {
+                sessionRef.child('votes').remove();
+                sessionRef.update({
+                    currentQuestion: nextQ,
+                    step: 1
+                });
+            }
+        }
+
+        function resetGame() {
+            sessionRef.set({
+                status: 'lobby',
+                players: {},
+                currentQuestion: 0,
+                step: 1,
+                votes: {}
+            });
+        }
+
+        function updateTeacherUI(data) {
+            if (data.status === 'lobby') {
+                document.getElementById('teacher-lobby').classList.remove('hidden');
+                document.getElementById('teacher-game').classList.add('hidden');
+                document.getElementById('teacher-final').classList.add('hidden');
+
+                const players = data.players || {};
+                const playerNames = Object.keys(players);
+                document.getElementById('joined-count').innerText = playerNames.length;
+
+                ['인성', '준성', '시원', '하원', '리나'].forEach(name => {
+                    const el = document.getElementById(`p-${name}`);
+                    if (players[name]) {
+                        el.className = "p-2 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40";
+                        el.innerText = `✅ ${name}`;
+                    } else {
+                        el.className = "p-2 rounded-lg bg-slate-700/50 text-slate-500 font-bold border border-slate-600";
+                        el.innerText = `⬜ ${name}`;
+                    }
+                });
+                return;
+            }
+
+            if (data.status === 'finished') {
+                document.getElementById('teacher-lobby').classList.add('hidden');
+                document.getElementById('teacher-game').classList.add('hidden');
+                document.getElementById('teacher-final').classList.remove('hidden');
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                return;
+            }
+
+            document.getElementById('teacher-lobby').classList.add('hidden');
+            document.getElementById('teacher-game').classList.remove('hidden');
+            document.getElementById('teacher-final').classList.add('hidden');
+
+            const qIndex = data.currentQuestion || 0;
+            const q = QUESTIONS[qIndex];
+
+            document.getElementById('question-number').innerText = `QUESTION ${qIndex + 1} / ${QUESTIONS.length}`;
+            document.getElementById('teacher-korean-text').innerHTML = q.koreanHtml;
+            document.getElementById('teacher-english-text').innerText = q.english;
+
+            const votes = data.votes || {};
+            const voteCount = Object.keys(votes).length;
+            document.getElementById('votes-submitted-count').innerText = voteCount;
+
+            const step = data.step || 1;
+            document.getElementById('btn-reveal-english').classList.toggle('hidden', step !== 1);
+            document.getElementById('btn-open-voting').classList.toggle('hidden', step !== 2);
+            document.getElementById('btn-show-results').classList.toggle('hidden', step !== 3);
+            document.getElementById('btn-next-question').classList.toggle('hidden', step !== 4);
+
+            document.getElementById('teacher-english-text').classList.toggle('hidden', step < 2);
+            document.getElementById('prompt-instruction').innerText = (step >= 2) ? "“Were you right?”" : "“What do you think this means?”";
+
+            const resultsSection = document.getElementById('results-display');
+            if (step === 4) {
+                resultsSection.classList.remove('hidden');
+
+                let countA = 0, countB = 0;
+                let votersA = [], votersB = [];
+
+                Object.entries(votes).forEach(([name, choice]) => {
+                    if (choice === 'A') { countA++; votersA.push(name); }
+                    if (choice === 'B') { countB++; votersB.push(name); }
+                });
+
+                document.getElementById('text-option-a').innerText = `A: ${q.a}`;
+                document.getElementById('text-option-b').innerText = `B: ${q.b}`;
+
+                document.getElementById('count-a').innerText = `${countA} votes`;
+                document.getElementById('count-b').innerText = `${countB} votes`;
+
+                const total = countA + countB || 1;
+                document.getElementById('bar-a').style.width = `${(countA / total) * 100}%`;
+                document.getElementById('bar-b').style.width = `${(countB / total) * 100}%`;
+
+                document.getElementById('voters-a').innerText = votersA.length ? `Voters: ${votersA.join(' · ')}` : '';
+                document.getElementById('voters-b').innerText = votersB.length ? `Voters: ${votersB.join(' · ')}` : '';
+            } else {
+                resultsSection.classList.add('hidden');
+            }
+        }
+
+        function selectStudentName(name) {
+            const currentPlayers = localState.players || {};
+            if (currentPlayers[name]) {
+                alert(`The name '${name}' has already been joined on another device.`);
+                return;
+            }
+
+            selectedStudentName = name;
+            document.querySelectorAll('.student-name-btn').forEach(btn => {
+                const btnName = btn.querySelector('span').innerText;
+                if (btnName === name) {
+                    btn.className = "student-name-btn w-full p-3 bg-indigo-600 text-white font-bold rounded-xl text-left flex justify-between items-center transition ring-2 ring-indigo-400";
+                    btn.querySelector('.status-icon').innerText = "👈";
+                } else {
+                    btn.className = "student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition";
+                    btn.querySelector('.status-icon').innerText = "⚪";
+                }
+            });
+
+            document.getElementById('btn-join-game').disabled = false;
+        }
+
+        function joinGame() {
+            if (!selectedStudentName) return;
+            sessionRef.child('players').child(selectedStudentName).set(true);
+
+            document.getElementById('student-join').classList.add('hidden');
+            document.getElementById('student-game').classList.remove('hidden');
+            document.getElementById('student-name-display').innerText = selectedStudentName;
+        }
+
+        function submitVote(choice) {
+            if (!selectedStudentName) return;
+            sessionRef.child('votes').child(selectedStudentName).set(choice);
+        }
+
+        function updateStudentUI(data) {
+            if (!selectedStudentName) return;
+
+            const qIndex = data.currentQuestion || 0;
+            document.getElementById('student-q-num').innerText = `QUESTION ${qIndex + 1} / ${QUESTIONS.length}`;
+
+            if (data.status === 'finished') {
+                document.getElementById('student-state-wait').classList.add('hidden');
+                document.getElementById('student-state-vote').classList.add('hidden');
+                document.getElementById('student-state-done').classList.add('hidden');
+                document.getElementById('student-state-finished').classList.remove('hidden');
+                return;
+            }
+
+            const votes = data.votes || {};
+            const hasVoted = votes[selectedStudentName] !== undefined;
+            const step = data.step || 1;
+
+            if (hasVoted) {
+                document.getElementById('student-state-wait').classList.add('hidden');
+                document.getElementById('student-state-vote').classList.add('hidden');
+                document.getElementById('student-state-done').classList.remove('hidden');
+            } else if (step === 3) {
+                document.getElementById('student-state-wait').classList.add('hidden');
+                document.getElementById('student-state-vote').classList.remove('hidden');
+                document.getElementById('student-state-done').classList.add('hidden');
+            } else {
+                document.getElementById('student-state-wait').classList.remove('hidden');
+                document.getElementById('student-state-vote').classList.add('hidden');
+                document.getElementById('student-state-done').classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
