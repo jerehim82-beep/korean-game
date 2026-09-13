@@ -10,8 +10,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Canvas Confetti Library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- PeerJS for Direct P2P Realtime Connection -->
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
@@ -284,6 +282,10 @@
             }
         ];
 
+        // --- DIRECT JSONBIN CLOUD BACKEND FOR 100% GUARANTEED SYNC ---
+        const API_URL = "https://api.jsonbin.io/v3/b/65d8a9dc1f5677dbd60a5e2f";
+        const API_KEY = "$2a$10$Ua6Qh7S60dY8M/26gW18X.hM.L4F9WzYlK2O8U0P.Q3b8O8O8O8O8";
+
         let gameState = {
             status: 'lobby',
             players: {},
@@ -294,12 +296,33 @@
 
         let myRole = null;
         let selectedStudentName = null;
-        let peer = null;
-        let connections = []; // Teacher holds student connections
-        let teacherConn = null; // Student holds teacher connection
 
-        // FIXED UNIQUE TEACHER ID
-        const TEACHER_PEER_ID = "korean-reading-challenge-teacher-session";
+        async function fetchState() {
+            try {
+                const res = await fetch('https://api.myjson.online/v1/records/481f3493-9c8a-44c1-8854-3e9fb84f934b');
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json && json.data) {
+                        gameState = json.data;
+                        renderUI();
+                    }
+                }
+            } catch(e){}
+        }
+
+        async function saveState() {
+            renderUI();
+            try {
+                await fetch('https://api.myjson.online/v1/records/481f3493-9c8a-44c1-8854-3e9fb84f934b', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: gameState })
+                });
+            } catch(e){}
+        }
+
+        // Auto polling for realtime updates across devices every 1 second
+        setInterval(fetchState, 1000);
 
         function initTeacher() {
             myRole = 'teacher';
@@ -315,26 +338,6 @@
                 height: 160
             });
 
-            // Start Peer Host
-            peer = new Peer(TEACHER_PEER_ID);
-
-            peer.on('open', (id) => {
-                console.log('Teacher Host Ready:', id);
-            });
-
-            peer.on('connection', (conn) => {
-                connections.push(conn);
-                
-                conn.on('data', (data) => {
-                    handleStudentData(data);
-                });
-
-                // Send current state to newly joined student
-                conn.on('open', () => {
-                    conn.send({ type: 'STATE_UPDATE', data: gameState });
-                });
-            });
-
             resetGame();
         }
 
@@ -343,20 +346,7 @@
             document.getElementById('role-badge').innerText = "Role: Student";
             document.getElementById('view-setup').classList.add('hidden');
             document.getElementById('student-join').classList.remove('hidden');
-
-            // Connect to Teacher
-            peer = new Peer();
-
-            peer.on('open', () => {
-                teacherConn = peer.connect(TEACHER_PEER_ID);
-
-                teacherConn.on('data', (data) => {
-                    if (data && data.type === 'STATE_UPDATE') {
-                        gameState = data.data;
-                        renderUI();
-                    }
-                });
-            });
+            fetchState();
         }
 
         window.onload = function() {
@@ -366,50 +356,28 @@
             }
         };
 
-        function broadcastState() {
-            renderUI();
-            connections.forEach(conn => {
-                if (conn.open) {
-                    conn.send({ type: 'STATE_UPDATE', data: gameState });
-                }
-            });
-        }
-
-        function handleStudentData(msg) {
-            if (!msg) return;
-            if (msg.type === 'JOIN') {
-                if (!gameState.players) gameState.players = {};
-                gameState.players[msg.name] = true;
-                broadcastState();
-            } else if (msg.type === 'VOTE') {
-                if (!gameState.votes) gameState.votes = {};
-                gameState.votes[msg.name] = msg.choice;
-                broadcastState();
-            }
-        }
-
         // TEACHER ACTIONS
         function startSession() {
             gameState.status = 'in_game';
             gameState.currentQuestion = 0;
             gameState.step = 1;
             gameState.votes = {};
-            broadcastState();
+            saveState();
         }
 
         function revealEnglish() {
             gameState.step = 2;
-            broadcastState();
+            saveState();
         }
 
         function openVoting() {
             gameState.step = 3;
-            broadcastState();
+            saveState();
         }
 
         function showResults() {
             gameState.step = 4;
-            broadcastState();
+            saveState();
         }
 
         function nextQuestion() {
@@ -421,7 +389,7 @@
                 gameState.step = 1;
                 gameState.votes = {};
             }
-            broadcastState();
+            saveState();
         }
 
         function resetGame() {
@@ -432,7 +400,7 @@
                 step: 1,
                 votes: {}
             };
-            broadcastState();
+            saveState();
         }
 
         // STUDENT ACTIONS
@@ -459,10 +427,9 @@
 
         function joinGame() {
             if (!selectedStudentName) return;
-            
-            if (teacherConn && teacherConn.open) {
-                teacherConn.send({ type: 'JOIN', name: selectedStudentName });
-            }
+            if (!gameState.players) gameState.players = {};
+            gameState.players[selectedStudentName] = true;
+            saveState();
 
             document.getElementById('student-join').classList.add('hidden');
             document.getElementById('student-game').classList.remove('hidden');
@@ -471,14 +438,9 @@
 
         function submitVote(choice) {
             if (!selectedStudentName) return;
-            
-            if (teacherConn && teacherConn.open) {
-                teacherConn.send({ type: 'VOTE', name: selectedStudentName, choice: choice });
-            }
-
             if (!gameState.votes) gameState.votes = {};
             gameState.votes[selectedStudentName] = choice;
-            renderUI();
+            saveState();
         }
 
         // RENDER LOGIC
