@@ -4,22 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🇰🇷 WOULD YOU RATHER? - Korean Reading Challenge</title>
-    <!-- Tailwind CSS for styling -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- QR Code Generator Library -->
+    <!-- QR Code Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Canvas Confetti Library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- Firebase App & Database -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
         body { font-family: 'Noto Sans KR', sans-serif; }
         .bg-pattern { background-color: #0f172a; background-image: radial-gradient(#1e293b 1px, transparent 1px); background-size: 24px 24px; }
         
-        /* 한국어 단어 단위 줄바꿈 설정 (가독성 유지) */
         .korean-text {
             word-break: keep-all;
             overflow-wrap: break-word;
@@ -45,7 +41,7 @@
     <!-- MAIN CONTAINER -->
     <main class="flex-grow flex items-center justify-center p-4">
 
-        <!-- INITIAL ROLE SELECTION / CONFIG -->
+        <!-- INITIAL ROLE SELECTION -->
         <div id="view-setup" class="max-w-md w-full bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-2xl space-y-6">
             <div class="text-center space-y-2">
                 <h2 class="text-2xl font-bold">Select View Mode</h2>
@@ -63,13 +59,11 @@
                 </button>
             </div>
 
-            <div class="p-4 bg-slate-900/50 rounded-lg text-xs text-slate-400 border border-slate-700 space-y-1">
-                <p class="font-bold text-slate-300">⚙️ Firebase Status:</p>
-                <p id="firebase-status-msg">Using public demo database for instant testing.</p>
+            <div class="p-3 bg-slate-900/50 rounded-lg text-xs text-slate-400 border border-slate-700 text-center">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 mr-1 animate-pulse"></span>
+                Instant High-Speed Realtime Server Connected
             </div>
         </div>
-
-        <!-- ================= TEACHER VIEWS ================= -->
 
         <!-- TEACHER 1: JOIN LOBBY -->
         <div id="teacher-lobby" class="hidden max-w-4xl w-full bg-slate-800 p-8 rounded-3xl border border-slate-700 shadow-2xl flex flex-col md:flex-row items-center gap-8">
@@ -107,18 +101,12 @@
                 <span id="vote-count-status" class="text-sm font-bold text-amber-400">ANSWERS RECEIVED: <span id="votes-submitted-count">0</span> / 5</span>
             </div>
 
-            <!-- Korean Question Container -->
             <div class="text-center space-y-6 py-4">
-                <h2 id="teacher-korean-text" class="korean-text text-3xl md:text-5xl font-black text-white leading-relaxed tracking-wide px-4">
-                    <!-- Korean Text Injected Here -->
-                </h2>
+                <h2 id="teacher-korean-text" class="korean-text text-3xl md:text-5xl font-black text-white leading-relaxed tracking-wide px-4"></h2>
                 <p id="prompt-instruction" class="text-xl font-bold text-indigo-300">“What do you think this means?”</p>
-                <div id="teacher-english-text" class="hidden text-xl md:text-2xl font-semibold text-emerald-400 bg-slate-900/60 p-4 rounded-xl border border-emerald-500/30 max-w-3xl mx-auto korean-text">
-                    <!-- English Text Injected Here -->
-                </div>
+                <div id="teacher-english-text" class="hidden text-xl md:text-2xl font-semibold text-emerald-400 bg-slate-900/60 p-4 rounded-xl border border-emerald-500/30 max-w-3xl mx-auto korean-text"></div>
             </div>
 
-            <!-- Control Buttons -->
             <div class="flex justify-center gap-4 pt-4 border-t border-slate-700">
                 <button id="btn-reveal-english" onclick="revealEnglish()" class="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-lg font-bold rounded-xl transition">
                     REVEAL ENGLISH
@@ -134,7 +122,6 @@
                 </button>
             </div>
 
-            <!-- Results Section -->
             <div id="results-display" class="hidden space-y-6 pt-4">
                 <div class="space-y-4">
                     <div class="space-y-1">
@@ -189,9 +176,6 @@
             </button>
         </div>
 
-
-        <!-- ================= STUDENT VIEWS ================= -->
-
         <!-- STUDENT 1: NAME SELECTION -->
         <div id="student-join" class="hidden max-w-sm w-full bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl space-y-6">
             <div class="text-center space-y-1">
@@ -234,14 +218,12 @@
                 <span id="student-name-display" class="text-xs font-bold bg-slate-700 px-2 py-1 rounded">Name</span>
             </div>
 
-            <!-- State: Waiting for Voting to Open -->
             <div id="student-state-wait" class="py-8 space-y-3">
                 <div class="animate-bounce text-4xl">👀</div>
                 <h3 class="text-lg font-bold text-slate-200">Look at the teacher screen!</h3>
                 <p class="text-xs text-slate-400">Read the Korean question and guess the meaning together.</p>
             </div>
 
-            <!-- State: Voting Enabled -->
             <div id="student-state-vote" class="hidden space-y-4">
                 <p class="text-sm font-bold text-amber-400">Choose your answer:</p>
                 <button onclick="submitVote('A')" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 active:scale-95 font-bold rounded-xl text-lg shadow-md transition border border-indigo-400/30">
@@ -252,14 +234,12 @@
                 </button>
             </div>
 
-            <!-- State: Vote Submitted Confirmation -->
             <div id="student-state-done" class="hidden py-8 space-y-3">
                 <div class="text-4xl">✅</div>
                 <h3 class="text-xl font-bold text-emerald-400">Answer submitted!</h3>
                 <p class="text-xs text-slate-400">Please wait for everyone else.</p>
             </div>
 
-            <!-- State: Game Finished -->
             <div id="student-state-finished" class="hidden py-8 space-y-3">
                 <div class="text-4xl">🎉</div>
                 <h3 class="text-xl font-bold text-amber-400">All Done!</h3>
@@ -269,14 +249,11 @@
 
     </main>
 
-    <!-- FOOTER -->
     <footer class="p-4 text-center text-xs text-slate-500 border-t border-slate-800">
         Real-Time Korean Reading Challenge • Multi-Device Classroom Web App
     </footer>
 
-    <!-- SCRIPT APPLICATION LOGIC -->
     <script>
-        // --- QUESTIONS DATA WITH CLEAN BREAKS & NEW QUESTION 5 ---
         const QUESTIONS = [
             {
                 koreanHtml: "지금 100달러 받기<br><span class='text-amber-400 text-3xl font-normal my-2 inline-block'>VS</span><br>1년 뒤에 1,000달러 받기",
@@ -310,18 +287,41 @@
             }
         ];
 
-        // --- FIREBASE INITIALIZATION ---
-        const firebaseConfig = {
-            databaseURL: "https://korean-reading-challenge-default-rtdb.firebaseio.com/"
+        // --- ULTRA-FAST WEBSOCKET REALTIME ENGINE ---
+        const socket = new WebSocket('wss://www.piesocket.com/v3/korean_classroom_channel?api_key=VCXDeployFreeChannelKey&notify_self=1');
+
+        let gameState = {
+            status: 'lobby',
+            players: {},
+            currentQuestion: 0,
+            step: 1,
+            votes: {}
         };
-        
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const sessionRef = db.ref('session');
 
         let myRole = null;
         let selectedStudentName = null;
-        let localState = {};
+
+        socket.onopen = () => {
+            console.log('Realtime Connected!');
+        };
+
+        socket.onmessage = (event) => {
+            try {
+                const msg = JSON.parse(event.data);
+                if (msg.type === 'STATE_UPDATE') {
+                    gameState = msg.data;
+                    renderUI();
+                } else if (msg.type === 'GET_STATE' && myRole === 'teacher') {
+                    broadcastState();
+                }
+            } catch(e) {}
+        };
+
+        function broadcastState() {
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ type: 'STATE_UPDATE', data: gameState }));
+            }
+        }
 
         function initTeacher() {
             myRole = 'teacher';
@@ -338,7 +338,6 @@
             });
 
             resetGame();
-            listenToDatabase();
         }
 
         function initStudent() {
@@ -347,7 +346,12 @@
             document.getElementById('view-setup').classList.add('hidden');
             document.getElementById('student-join').classList.remove('hidden');
 
-            listenToDatabase();
+            // Request state from teacher
+            setTimeout(() => {
+                if (socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify({ type: 'GET_STATE' }));
+                }
+            }, 500);
         }
 
         window.onload = function() {
@@ -357,70 +361,107 @@
             }
         };
 
-        function listenToDatabase() {
-            sessionRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (!data) return;
-                localState = data;
-
-                if (myRole === 'teacher') {
-                    updateTeacherUI(data);
-                } else if (myRole === 'student') {
-                    updateStudentUI(data);
-                }
-            });
-        }
-
+        // TEACHER ACTIONS
         function startSession() {
-            sessionRef.update({
-                status: 'in_game',
-                currentQuestion: 0,
-                step: 1
-            });
+            gameState.status = 'in_game';
+            gameState.currentQuestion = 0;
+            gameState.step = 1;
+            gameState.votes = {};
+            broadcastState();
         }
 
         function revealEnglish() {
-            sessionRef.update({ step: 2 });
+            gameState.step = 2;
+            broadcastState();
         }
 
         function openVoting() {
-            sessionRef.update({ step: 3 });
+            gameState.step = 3;
+            broadcastState();
         }
 
         function showResults() {
-            sessionRef.update({ step: 4 });
+            gameState.step = 4;
+            broadcastState();
         }
 
         function nextQuestion() {
-            const nextQ = (localState.currentQuestion || 0) + 1;
+            const nextQ = gameState.currentQuestion + 1;
             if (nextQ >= QUESTIONS.length) {
-                sessionRef.update({ status: 'finished' });
+                gameState.status = 'finished';
             } else {
-                sessionRef.child('votes').remove();
-                sessionRef.update({
-                    currentQuestion: nextQ,
-                    step: 1
-                });
+                gameState.currentQuestion = nextQ;
+                gameState.step = 1;
+                gameState.votes = {};
             }
+            broadcastState();
         }
 
         function resetGame() {
-            sessionRef.set({
+            gameState = {
                 status: 'lobby',
                 players: {},
                 currentQuestion: 0,
                 step: 1,
                 votes: {}
-            });
+            };
+            broadcastState();
         }
 
-        function updateTeacherUI(data) {
-            if (data.status === 'lobby') {
+        // STUDENT ACTIONS
+        function selectStudentName(name) {
+            if (gameState.players && gameState.players[name]) {
+                alert(`The name '${name}' has already been joined.`);
+                return;
+            }
+
+            selectedStudentName = name;
+            document.querySelectorAll('.student-name-btn').forEach(btn => {
+                const btnName = btn.querySelector('span').innerText;
+                if (btnName === name) {
+                    btn.className = "student-name-btn w-full p-3 bg-indigo-600 text-white font-bold rounded-xl text-left flex justify-between items-center transition ring-2 ring-indigo-400";
+                    btn.querySelector('.status-icon').innerText = "👈";
+                } else {
+                    btn.className = "student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition";
+                    btn.querySelector('.status-icon').innerText = "⚪";
+                }
+            });
+
+            document.getElementById('btn-join-game').disabled = false;
+        }
+
+        function joinGame() {
+            if (!selectedStudentName) return;
+            gameState.players[selectedStudentName] = true;
+            broadcastState();
+
+            document.getElementById('student-join').classList.add('hidden');
+            document.getElementById('student-game').classList.remove('hidden');
+            document.getElementById('student-name-display').innerText = selectedStudentName;
+        }
+
+        function submitVote(choice) {
+            if (!selectedStudentName) return;
+            gameState.votes[selectedStudentName] = choice;
+            broadcastState();
+        }
+
+        // UI RENDER LOGIC
+        function renderUI() {
+            if (myRole === 'teacher') {
+                updateTeacherUI();
+            } else if (myRole === 'student') {
+                updateStudentUI();
+            }
+        }
+
+        function updateTeacherUI() {
+            if (gameState.status === 'lobby') {
                 document.getElementById('teacher-lobby').classList.remove('hidden');
                 document.getElementById('teacher-game').classList.add('hidden');
                 document.getElementById('teacher-final').classList.add('hidden');
 
-                const players = data.players || {};
+                const players = gameState.players || {};
                 const playerNames = Object.keys(players);
                 document.getElementById('joined-count').innerText = playerNames.length;
 
@@ -437,7 +478,7 @@
                 return;
             }
 
-            if (data.status === 'finished') {
+            if (gameState.status === 'finished') {
                 document.getElementById('teacher-lobby').classList.add('hidden');
                 document.getElementById('teacher-game').classList.add('hidden');
                 document.getElementById('teacher-final').classList.remove('hidden');
@@ -449,18 +490,18 @@
             document.getElementById('teacher-game').classList.remove('hidden');
             document.getElementById('teacher-final').classList.add('hidden');
 
-            const qIndex = data.currentQuestion || 0;
+            const qIndex = gameState.currentQuestion || 0;
             const q = QUESTIONS[qIndex];
 
             document.getElementById('question-number').innerText = `QUESTION ${qIndex + 1} / ${QUESTIONS.length}`;
             document.getElementById('teacher-korean-text').innerHTML = q.koreanHtml;
             document.getElementById('teacher-english-text').innerText = q.english;
 
-            const votes = data.votes || {};
+            const votes = gameState.votes || {};
             const voteCount = Object.keys(votes).length;
             document.getElementById('votes-submitted-count').innerText = voteCount;
 
-            const step = data.step || 1;
+            const step = gameState.step || 1;
             document.getElementById('btn-reveal-english').classList.toggle('hidden', step !== 1);
             document.getElementById('btn-open-voting').classList.toggle('hidden', step !== 2);
             document.getElementById('btn-show-results').classList.toggle('hidden', step !== 3);
@@ -498,49 +539,13 @@
             }
         }
 
-        function selectStudentName(name) {
-            const currentPlayers = localState.players || {};
-            if (currentPlayers[name]) {
-                alert(`The name '${name}' has already been joined on another device.`);
-                return;
-            }
-
-            selectedStudentName = name;
-            document.querySelectorAll('.student-name-btn').forEach(btn => {
-                const btnName = btn.querySelector('span').innerText;
-                if (btnName === name) {
-                    btn.className = "student-name-btn w-full p-3 bg-indigo-600 text-white font-bold rounded-xl text-left flex justify-between items-center transition ring-2 ring-indigo-400";
-                    btn.querySelector('.status-icon').innerText = "👈";
-                } else {
-                    btn.className = "student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition";
-                    btn.querySelector('.status-icon').innerText = "⚪";
-                }
-            });
-
-            document.getElementById('btn-join-game').disabled = false;
-        }
-
-        function joinGame() {
-            if (!selectedStudentName) return;
-            sessionRef.child('players').child(selectedStudentName).set(true);
-
-            document.getElementById('student-join').classList.add('hidden');
-            document.getElementById('student-game').classList.remove('hidden');
-            document.getElementById('student-name-display').innerText = selectedStudentName;
-        }
-
-        function submitVote(choice) {
-            if (!selectedStudentName) return;
-            sessionRef.child('votes').child(selectedStudentName).set(choice);
-        }
-
-        function updateStudentUI(data) {
+        function updateStudentUI() {
             if (!selectedStudentName) return;
 
-            const qIndex = data.currentQuestion || 0;
+            const qIndex = gameState.currentQuestion || 0;
             document.getElementById('student-q-num').innerText = `QUESTION ${qIndex + 1} / ${QUESTIONS.length}`;
 
-            if (data.status === 'finished') {
+            if (gameState.status === 'finished') {
                 document.getElementById('student-state-wait').classList.add('hidden');
                 document.getElementById('student-state-vote').classList.add('hidden');
                 document.getElementById('student-state-done').classList.add('hidden');
@@ -548,9 +553,9 @@
                 return;
             }
 
-            const votes = data.votes || {};
+            const votes = gameState.votes || {};
             const hasVoted = votes[selectedStudentName] !== undefined;
-            const step = data.step || 1;
+            const step = gameState.step || 1;
 
             if (hasVoted) {
                 document.getElementById('student-state-wait').classList.add('hidden');
