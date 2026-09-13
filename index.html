@@ -80,7 +80,7 @@
                     </div>
                 </div>
 
-                <button onclick="startSession()" class="mt-6 px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-xl font-bold rounded-2xl shadow-xl transition w-full md:w-auto">
+                <button id="btn-start-game" onclick="startSession()" class="mt-6 px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-xl font-bold rounded-2xl shadow-xl transition w-full md:w-auto cursor-pointer">
                     START GAME ▶
                 </button>
             </div>
@@ -105,16 +105,16 @@
             </div>
 
             <div class="flex justify-center gap-4 pt-4 border-t border-slate-700">
-                <button id="btn-reveal-english" onclick="revealEnglish()" class="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-lg font-bold rounded-xl transition">
+                <button id="btn-reveal-english" onclick="revealEnglish()" class="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-lg font-bold rounded-xl transition cursor-pointer">
                     REVEAL ENGLISH
                 </button>
-                <button id="btn-open-voting" onclick="openVoting()" class="hidden px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-lg font-bold rounded-xl transition">
+                <button id="btn-open-voting" onclick="openVoting()" class="hidden px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-lg font-bold rounded-xl transition cursor-pointer">
                     OPEN VOTING 🗳️
                 </button>
-                <button id="btn-show-results" onclick="showResults()" class="hidden px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-lg font-bold rounded-xl transition">
+                <button id="btn-show-results" onclick="showResults()" class="hidden px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-lg font-bold rounded-xl transition cursor-pointer">
                     SHOW RESULTS 📊
                 </button>
-                <button id="btn-next-question" onclick="nextQuestion()" class="hidden px-6 py-3 bg-purple-600 hover:bg-purple-500 text-lg font-bold rounded-xl transition">
+                <button id="btn-next-question" onclick="nextQuestion()" class="hidden px-6 py-3 bg-purple-600 hover:bg-purple-500 text-lg font-bold rounded-xl transition cursor-pointer">
                     NEXT QUESTION ➔
                 </button>
             </div>
@@ -168,7 +168,7 @@
                     <p class="text-xs text-slate-400 uppercase font-bold">Students Participated</p>
                 </div>
             </div>
-            <button onclick="resetGame()" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-sm font-bold rounded-xl transition">
+            <button onclick="resetGame()" class="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-sm font-bold rounded-xl transition cursor-pointer">
                 🔄 Restart Session
             </button>
         </div>
@@ -181,29 +181,29 @@
             </div>
 
             <div class="space-y-2">
-                <button onclick="selectStudentName('인성')" class="student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition">
+                <button onclick="selectStudentName('인성')" class="student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition cursor-pointer">
                     <span>인성</span>
                     <span class="status-icon">⚪</span>
                 </button>
-                <button onclick="selectStudentName('준성')" class="student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition">
+                <button onclick="selectStudentName('준성')" class="student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition cursor-pointer">
                     <span>준성</span>
                     <span class="status-icon">⚪</span>
                 </button>
-                <button onclick="selectStudentName('시원')" class="student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition">
+                <button onclick="selectStudentName('시원')" class="student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition cursor-pointer">
                     <span>시원</span>
                     <span class="status-icon">⚪</span>
                 </button>
-                <button onclick="selectStudentName('하원')" class="student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition">
+                <button onclick="selectStudentName('하원')" class="student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition cursor-pointer">
                     <span>하원</span>
                     <span class="status-icon">⚪</span>
                 </button>
-                <button onclick="selectStudentName('리나')" class="student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition">
+                <button onclick="selectStudentName('리나')" class="student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition cursor-pointer">
                     <span>리나</span>
                     <span class="status-icon">⚪</span>
                 </button>
             </div>
 
-            <button id="btn-join-game" onclick="joinGame()" disabled class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:hover:bg-emerald-600 font-bold rounded-xl shadow-lg transition">
+            <button id="btn-join-game" onclick="joinGame()" disabled class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:hover:bg-emerald-600 font-bold rounded-xl shadow-lg transition cursor-pointer">
                 JOIN GAME
             </button>
         </div>
@@ -223,10 +223,10 @@
 
             <div id="student-state-vote" class="hidden space-y-4">
                 <p class="text-sm font-bold text-amber-400">Choose your answer:</p>
-                <button onclick="submitVote('A')" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 active:scale-95 font-bold rounded-xl text-lg shadow-md transition border border-indigo-400/30">
+                <button onclick="submitVote('A')" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 active:scale-95 font-bold rounded-xl text-lg shadow-md transition border border-indigo-400/30 cursor-pointer">
                     OPTION A
                 </button>
-                <button onclick="submitVote('B')" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 active:scale-95 font-bold rounded-xl text-lg shadow-md transition border border-emerald-400/30">
+                <button onclick="submitVote('B')" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 active:scale-95 font-bold rounded-xl text-lg shadow-md transition border border-emerald-400/30 cursor-pointer">
                     OPTION B
                 </button>
             </div>
@@ -284,13 +284,6 @@
             }
         ];
 
-        // --- GLOBAL PUBNUB MULTI-DEVICE REALTIME ENGINE ---
-        const pubnub = new PubNub({
-            subscribeKey: "sub-c-4377ab04-f586-11ec-b8c1-da4b6938d82d",
-            publishKey: "pub-c-850fbf8d-d522-4a0b-99f5-bf158b4b20ef",
-            uuid: "user_" + Math.random().toString(36).substring(7)
-        });
-
         let gameState = {
             status: 'lobby',
             players: {},
@@ -301,26 +294,45 @@
 
         let myRole = null;
         let selectedStudentName = null;
+        let pubnub = null;
 
-        pubnub.subscribe({ channels: ['korean_classroom_channel'] });
+        // Initialize PubNub safely
+        try {
+            if (typeof PubNub !== 'undefined') {
+                pubnub = new PubNub({
+                    subscribeKey: "sub-c-4377ab04-f586-11ec-b8c1-da4b6938d82d",
+                    publishKey: "pub-c-850fbf8d-d522-4a0b-99f5-bf158b4b20ef",
+                    uuid: "user_" + Math.random().toString(36).substring(7)
+                });
 
-        pubnub.addListener({
-            message: function(event) {
-                const msg = event.message;
-                if (msg.type === 'STATE_UPDATE') {
-                    gameState = msg.data;
-                    renderUI();
-                } else if (msg.type === 'GET_STATE' && myRole === 'teacher') {
-                    broadcastState();
-                }
+                pubnub.subscribe({ channels: ['korean_classroom_channel'] });
+
+                pubnub.addListener({
+                    message: function(event) {
+                        const msg = event.message;
+                        if (msg && msg.type === 'STATE_UPDATE') {
+                            gameState = msg.data || gameState;
+                            renderUI();
+                        } else if (msg && msg.type === 'GET_STATE' && myRole === 'teacher') {
+                            broadcastState();
+                        }
+                    }
+                });
             }
-        });
+        } catch(e) {
+            console.log("PubNub Error:", e);
+        }
 
         function broadcastState() {
-            pubnub.publish({
-                channel: 'korean_classroom_channel',
-                message: { type: 'STATE_UPDATE', data: gameState }
-            });
+            renderUI();
+            if (pubnub) {
+                try {
+                    pubnub.publish({
+                        channel: 'korean_classroom_channel',
+                        message: { type: 'STATE_UPDATE', data: gameState }
+                    });
+                } catch(e){}
+            }
         }
 
         function initTeacher() {
@@ -331,11 +343,13 @@
 
             const studentUrl = window.location.href.split('?')[0] + '?role=student';
             document.getElementById('qrcode').innerHTML = "";
-            new QRCode(document.getElementById("qrcode"), {
-                text: studentUrl,
-                width: 160,
-                height: 160
-            });
+            if (typeof QRCode !== 'undefined') {
+                new QRCode(document.getElementById("qrcode"), {
+                    text: studentUrl,
+                    width: 160,
+                    height: 160
+                });
+            }
 
             resetGame();
         }
@@ -347,10 +361,12 @@
             document.getElementById('student-join').classList.remove('hidden');
 
             setTimeout(() => {
-                pubnub.publish({
-                    channel: 'korean_classroom_channel',
-                    message: { type: 'GET_STATE' }
-                });
+                if (pubnub) {
+                    pubnub.publish({
+                        channel: 'korean_classroom_channel',
+                        message: { type: 'GET_STATE' }
+                    });
+                }
             }, 500);
         }
 
@@ -419,10 +435,10 @@
             document.querySelectorAll('.student-name-btn').forEach(btn => {
                 const btnName = btn.querySelector('span').innerText;
                 if (btnName === name) {
-                    btn.className = "student-name-btn w-full p-3 bg-indigo-600 text-white font-bold rounded-xl text-left flex justify-between items-center transition ring-2 ring-indigo-400";
+                    btn.className = "student-name-btn w-full p-3 bg-indigo-600 text-white font-bold rounded-xl text-left flex justify-between items-center transition ring-2 ring-indigo-400 cursor-pointer";
                     btn.querySelector('.status-icon').innerText = "👈";
                 } else {
-                    btn.className = "student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition";
+                    btn.className = "student-name-btn w-full p-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl text-left flex justify-between items-center transition cursor-pointer";
                     btn.querySelector('.status-icon').innerText = "⚪";
                 }
             });
@@ -484,7 +500,9 @@
                 document.getElementById('teacher-lobby').classList.add('hidden');
                 document.getElementById('teacher-game').classList.add('hidden');
                 document.getElementById('teacher-final').classList.remove('hidden');
-                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                if (typeof confetti !== 'undefined') {
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                }
                 return;
             }
 
